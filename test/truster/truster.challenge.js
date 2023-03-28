@@ -23,6 +23,12 @@ describe('[Challenge] Truster', function () {
 
     it('Execution', async function () {
         /** CODE YOUR SOLUTION HERE */
+        const trusterAttack = await (await ethers.getContractFactory('DamnValuableToken', deployer))
+                                .deploy(
+                                    pool.address,
+                                    tokens.address
+                                );
+        await trusterAttack.attack();
     });
 
     after(async function () {
